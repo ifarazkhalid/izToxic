@@ -12,3 +12,7 @@ We are provided with a large number of Wikipedia comments which have been labele
 - Insult
 - Threat
 - Identity Hate
+
+# Solution Overview
+
+**izToxic** solution was simplied and I broke the whole problem into 6 different problems. Instead of performing multimonimal classification, each comment was used to do binary classification and predict only one category at a time.
