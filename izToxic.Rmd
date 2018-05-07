@@ -1,30 +1,28 @@
-#Project Name: izToxic
-#Name: Faraz Khalid
-#Description: A solution to classify toxic, severe toxic, obscene, threat, insult and identity hate comments.
-#The data was taken from kaggle (source: https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge/data).
+```{r}
+library(RTextTools)
 
-#Project Description: The project was done in in Apache Spark using SparkR.
+#data(USCongress)
+z
+toxic <- toxic[1:10000,]
+```
 
-#Load SparkR library that lets us use R in Apache Spark.
-library(SparkR)
-
-#Loading data (databricks community version was used for this project)
-toxic <- read.csv(file="/dbfs/FileStore/tables/train.csv", header=TRUE, sep=",")
-
-#For checking purposes, only 50000 rows were being utilized as databricks cluster is only 6 gigabytes and does not perform very well if the dataset is too large.
-toxic <- toxic[1:50000,]
-#remove ID as they do not have influence on toxicity of a comment.
+```{r}
 toxic <- toxic[-c(1)]
-
-#Make multi-nomial problem a binary classification problem as it is more easier to tackle it in pieces.
-#Dropped all columns except comment and toxic (one of the toxicity levels out of 6)
 toxic <- toxic[-c(3:7)]
-
-#rearranging column which has text as we want it to be second and not first. This is made for simplification of tasks.
 toxic$comment = toxic$comment_text
 toxic <- toxic[-c(1)]
+```
 
+-----------------------------------------------------------------------------------------
+WORD CLOUD
+-----------------------------------------------------------------------------------------
+
+#Installing libraries that are needed.
+```{r}
 library(tm)
+```
+#Making word cloud
+```{r}
 toxic_corpus <- Corpus(VectorSource(toxic$comment))
 toxic_clean <- tm_map(toxic_corpus, content_transformer(tolower))  
 toxic_clean <- tm_map(toxic_clean, removeNumbers) 
@@ -41,12 +39,17 @@ wordcloud(toxic_clean[toxic_indices],min.freq=40, max.words = Inf) #toxic wordcl
 
 wordcloud(toxic_clean[nonToxic_indices],min.freq=40)
 
-#------------------------------------------------------
-#MODEL AND OTHER THINGS BELOW THIS
-#------------------------------------------------------
+```
 
-#Creating a Matrix to classify toxic only.
 
+
+
+------------------------------------------------------
+MODEL AND OTHER THINGS BELOW THIS
+------------------------------------------------------
+
+Creating a Matrix to classify toxic only.
+```{r}
 # CREATE THE DOCUMENT-TERM MATRIX
 doc_matrix <- create_matrix(toxic$comment, language="english", removeNumbers=TRUE,
 stemWords=TRUE, removeSparseTerms=.998)
@@ -78,6 +81,10 @@ analytics@document_summary
 
 #write.csv(analytics@document_summary, file = "DocumentSummary.csv")
 
+```
+
+CLASSIFY SEVERE TOXIC
+```{r}
 toxic = read.csv(file="train.csv", header = TRUE)
 toxic <- toxic[1:10000,]
 
@@ -131,7 +138,10 @@ analytics <- create_analytics(container,
 cbind(SVM_CLASSIFY))
 
 summary(analytics)
+```
 
+CLASSIFY THREAT
+```{r}
 toxic = read.csv(file="train.csv", header = TRUE)
 toxic <- toxic[1:10000,]
 
@@ -154,7 +164,10 @@ analytics <- create_analytics(container,
 cbind(SVM_CLASSIFY))
 
 summary(analytics)
+```
 
+CLASSIFY INSULT
+```{r}
 toxic = read.csv(file="train.csv", header = TRUE)
 toxic <- toxic[1:10000,]
 
@@ -177,3 +190,57 @@ analytics <- create_analytics(container,
 cbind(SVM_CLASSIFY))
 
 summary(analytics)
+```
+
+CLASSIFY 
+```{r}
+toxic = read.csv(file="train.csv", header = TRUE)
+toxic <- toxic[1:10000,]
+
+#toxic <- toxic[-c(1)]
+toxic <- toxic[-c(1,3,4,5,7,8)]
+toxic$comment = toxic$comment_text
+toxic <- toxic[-c(1)]
+
+doc_matrix <- create_matrix(toxic$comment, language="english", removeNumbers=TRUE,
+stemWords=TRUE, removeSparseTerms=.998)
+
+container <- create_container(doc_matrix, toxic$threat, trainSize=1:7500,
+testSize=7501:10000, virgin=FALSE)
+
+SVM <- train_model(container,"SVM")
+
+SVM_CLASSIFY <- classify_model(container, SVM)
+
+analytics <- create_analytics(container,
+cbind(SVM_CLASSIFY))
+
+summary(analytics)
+```
+
+CLASSIFY INSULT
+```{r}
+toxic = read.csv(file="train.csv", header = TRUE)
+toxic <- toxic[1:10000,]
+
+#toxic <- toxic[-c(1)]
+toxic <- toxic[-c(1,3,4,5,6,7)]
+toxic$comment = toxic$comment_text
+toxic <- toxic[-c(1)]
+
+doc_matrix <- create_matrix(toxic$comment, language="english", removeNumbers=TRUE,
+stemWords=TRUE, removeSparseTerms=.998)
+
+container <- create_container(doc_matrix, toxic$identity_hate, trainSize=1:7500,
+testSize=7501:10000, virgin=FALSE)
+
+SVM <- train_model(container,"SVM")
+
+SVM_CLASSIFY <- classify_model(container, SVM)
+
+analytics <- create_analytics(container,
+cbind(SVM_CLASSIFY))
+
+summary(analytics)
+```
+
