@@ -15,4 +15,8 @@ We are provided with a large number of Wikipedia comments which have been labele
 
 # Solution Overview
 
-**izToxic** solution was simplied and I broke the whole problem into 6 different problems. Instead of performing multimonimal classification, each comment was used to do binary classification and predict only one category at a time.
+**izToxic** solution was simplified and I broke the whole problem into 6 different problems. Instead of performing multimonimal classification, each comment was used to do binary classification and predict only one category at a time.
+
+# Exploration
+
+Doing this project, I learned about SparkR and how to efficiently use it do classfication of comments in Apache Spark.
